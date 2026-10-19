@@ -10,18 +10,24 @@ const appKey = 'advent-elte'
 let schedule = {}
 let md = null
 
-firstDateButton.addEventListener('click', function () {
-    dateElem.value = '2026-12-01'
-})
-
-dateElem.addEventListener('change', function (event) {
-    const pickDate = event.target.value
+const changeMd = function (pickDate) {
     if (!(schedule[pickDate])) {
         modal.show()
     } else {
         const fileName = schedule[pickDate][0]
         loadMd(fileName)
     }
+}
+
+firstDateButton.addEventListener('click', function () {
+    const pickDate = '2026-12-01'
+    dateElem.value = pickDate
+    changeMd(pickDate)
+})
+
+dateElem.addEventListener('change', function (event) {
+    const pickDate = event.target.value
+    changeMd(pickDate)
 })
 
 const reloadSchedule = async function () {
