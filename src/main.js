@@ -3,6 +3,7 @@
 const taskElem = document.getElementById('task-today')
 const dateElem = document.getElementById('task-date')
 const firstDateButton = document.getElementById('first-date')
+const reloadButton = document.getElementById('reload-tasks')
 const modal = new bootstrap.Modal('#not-found-modal', { toggle: false })
 const appKey = 'advent-elte'
 
@@ -23,6 +24,14 @@ dateElem.addEventListener('change', function (event) {
     }
 })
 
+const reloadSchedule = async function () {
+    const data = await getSchedule()
+    localStorage.setItem(appKey, JSON.stringify(data))
+    schedule = data
+}
+
+reloadButton.addEventListener('click', reloadSchedule)
+
 const getSchedule = async function () {
     const res = await fetch('https://raw.githubusercontent.com/szekeres3/advent/refs/heads/main/src/tasks/schedule.json')
     const data = await res.json()
@@ -42,9 +51,7 @@ const main = async function () {
 
     const sstore = localStorage.getItem(appKey)
     if (!sstore) {
-        const data = getSchedule()
-        localStorage.setItem(appKey, JSON.stringify(data))
-        schedule = data
+        await reloadSchedule()
     } else {
         schedule = JSON.parse(sstore)
     }
