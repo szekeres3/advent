@@ -1,0 +1,35 @@
+{
+  "title": "Kacsamama",
+  "sb3": "https://raw.githubusercontent.com/szekeres3/advent/refs/heads/main/scratch/kacsamama/Kacsamama.sb3",
+  "toolbox": {
+    "categories": [
+      "control",
+      "operators",
+      "variables",
+      "myBlocks"
+    ]
+  },
+  "ui": {
+    "allowExtensions": false
+  },
+  "steps": [
+    {
+      "title": "Melyik programozási tétel sémája illeszthető rá?",
+      "text": "Sorozat -> elem"
+    }
+  ],
+  "costumes": {
+    "enabled": false,
+    "showBuiltin": false
+  },
+  "sounds": {
+    "enabled": false,
+    "showBuiltin": false
+  },
+  "backdrops": {
+    "showBuiltin": false
+  },
+  "sprites": {
+    "showBuiltin": false
+  }
+}
