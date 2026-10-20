@@ -15,6 +15,8 @@ src                    (forráskód)
 |-- assets/            (képek, stíluslapok)
 |   |-- main.css       (az oldal stíluslapja)
 
+scratch                (mentett Scratch projektek)
+
 ```
 
 ## Függőségek
