@@ -8,25 +8,57 @@ const importButton = document.getElementById('import-tasks')
 const importFileInput = document.getElementById('import-taskfile')
 const modal = new bootstrap.Modal('#not-found-modal', { toggle: false })
 const imodal = new bootstrap.Modal('#import-modal', { toggle: false })
+const nextButton = document.getElementById('pag-next')
+const prevButton = document.getElementById('pag-prev')
+
 const appKey = 'advent-elte'
+const baseURL = 'https://raw.githubusercontent.com/szekeres3/advent/refs/heads/main/src/tasks'
 
 let schedule = {}
 let md = null
+let currPage = 0
 
-const changeMd = function (pickDate) {
-    if (!(schedule[pickDate])) {
+const changeMd = function (pickDate, isForce = false, page = 0) {
+    const pdate = schedule[pickDate]
+    if (!pdate) {
+        if (isForce) {
+            navigateToFirstDate()
+        }
+
         modal.show()
-    } else {
-        const fileName = schedule[pickDate][0]
-        loadMd(fileName)
+        return
     }
+
+    const pdpage = pdate[page]
+    if (!pdpage) {
+        if (isForce) {
+            navigateToFirstDate()
+        }
+
+        modal.show()
+        return
+    }
+
+    loadMd(pdpage)
 }
 
-firstDateButton.addEventListener('click', function () {
+const navigateToFirstDate = function () {
     const pickDate = '2026-12-01'
     dateElem.value = pickDate
     changeMd(pickDate)
-})
+}
+
+const changeTaskPage = function(page) {
+    const pickDate = dateElem.value
+    const safePage = Math.min(Math.max(0, page), schedule[pickDate].length - 1)
+    currPage = safePage
+
+    changeMd(pickDate, false, safePage)
+}
+
+firstDateButton.addEventListener('click', navigateToFirstDate)
+prevButton.addEventListener('click', () => changeTaskPage(--currPage))
+nextButton.addEventListener('click', () => changeTaskPage(++currPage))
 
 dateElem.addEventListener('change', function (event) {
     const pickDate = event.target.value
@@ -60,12 +92,18 @@ const handleTaskFile = async function (event) { // https://developer.mozilla.org
     }
 }
 
-reloadButton.addEventListener('click', () => reloadSchedule(true))
+reloadButton.addEventListener('click', () => {
+    const force = true
+    reloadSchedule(force)
+
+    const pickDate = dateElem.value
+    changeMd(pickDate, force)
+})
 importButton.addEventListener('click', importTempTask)
 importFileInput.addEventListener('change', handleTaskFile)
 
 const getSchedule = async function (force = false) {
-    const res = await fetch('https://raw.githubusercontent.com/szekeres3/advent/refs/heads/main/src/tasks/schedule.json', {
+    const res = await fetch(`${baseURL}/schedule.json`, {
         cache: force ? 'no-cache' : 'default'
     })
     const data = await res.json()
@@ -78,7 +116,7 @@ const displayMd = function (htmlDt) {
 }
 
 const loadMd = async function (name) {
-    const res = await fetch(`https://raw.githubusercontent.com/szekeres3/advent/refs/heads/main/src/tasks/${name}`)
+    const res = await fetch(`${baseURL}/${name}`)
     const data = await res.text()
 
     displayMd(data)
@@ -95,8 +133,7 @@ const main = async function () {
         schedule = JSON.parse(sstore)
     }
 
-    const kfile = schedule['2026-12-01'][0]
-    loadMd(kfile)
+    navigateToFirstDate()
 }
 
 main()

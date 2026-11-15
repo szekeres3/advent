@@ -33,12 +33,16 @@
         <nav class="col-12 col-sm-8 col-md-6 col-lg-4 col-xxl-2">
             <label for="task-date" class="form-label">Feladványválasztó:</label>
 
-
             <div class="d-flex gap-2">
                 <input id="task-date" class="form-control" type="date" step="4" value="2026-12-01" min="2026-12-02"
                     max="2026-12-24">
 
                 <input type="button" class="btn btn-secondary" value="Első nap" id="first-date">
+
+                <div class="btn-group">
+                    <input id="pag-prev" class="btn btn-outline-primary" type="button" value="Előző">
+                    <input id="pag-next" class="btn btn-outline-primary" type="button" value="Következő">
+                </div>
             </div>
         </nav>
 
