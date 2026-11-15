@@ -39,7 +39,9 @@ const reloadSchedule = async function () {
 reloadButton.addEventListener('click', reloadSchedule)
 
 const getSchedule = async function () {
-    const res = await fetch('https://raw.githubusercontent.com/szekeres3/advent/refs/heads/main/src/tasks/schedule.json')
+    const res = await fetch('https://raw.githubusercontent.com/szekeres3/advent/refs/heads/main/src/tasks/schedule.json', {
+        cache: 'no-cache'
+    })
     const data = await res.json()
 
     return data
