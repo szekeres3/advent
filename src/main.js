@@ -30,17 +30,17 @@ dateElem.addEventListener('change', function (event) {
     changeMd(pickDate)
 })
 
-const reloadSchedule = async function () {
-    const data = await getSchedule()
+const reloadSchedule = async function (force = false) {
+    const data = await getSchedule(force)
     localStorage.setItem(appKey, JSON.stringify(data))
     schedule = data
 }
 
-reloadButton.addEventListener('click', reloadSchedule)
+reloadButton.addEventListener('click', () => reloadSchedule(true) )
 
-const getSchedule = async function () {
+const getSchedule = async function (force = false) {
     const res = await fetch('https://raw.githubusercontent.com/szekeres3/advent/refs/heads/main/src/tasks/schedule.json', {
-        cache: 'no-cache'
+        cache: force ? 'no-cache' : 'default'
     })
     const data = await res.json()
 
