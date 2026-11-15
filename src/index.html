@@ -22,6 +22,7 @@
             </span>
             <div class="d-flex" role="search">
                 <input class="nav-link me-2" type="button" value="Újratöltés" id="reload-tasks">
+                <input class="nav-link" type="button" value="Sajátgép" id="import-tasks">
             </div>
         </div>
     </nav>
@@ -56,6 +57,27 @@
                 </div>
                 <div class="modal-body">
                     A kijelölt dátumon nincs feltöltött feladat. :/
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="import-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5">Új feladat betöltése</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="import-taskfile" class="form-label">Fájlbetöltés:</label>
+                        <input class="form-control" type="file" id="import-taskfile" accept="text/markdown">
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>

@@ -4,7 +4,10 @@ const taskElem = document.getElementById('task-today')
 const dateElem = document.getElementById('task-date')
 const firstDateButton = document.getElementById('first-date')
 const reloadButton = document.getElementById('reload-tasks')
+const importButton = document.getElementById('import-tasks')
+const importFileInput = document.getElementById('import-taskfile')
 const modal = new bootstrap.Modal('#not-found-modal', { toggle: false })
+const imodal = new bootstrap.Modal('#import-modal', { toggle: false })
 const appKey = 'advent-elte'
 
 let schedule = {}
@@ -36,7 +39,30 @@ const reloadSchedule = async function (force = false) {
     schedule = data
 }
 
-reloadButton.addEventListener('click', () => reloadSchedule(true) )
+const importTempTask = async function () {
+    imodal.show()
+}
+
+const handleTaskFile = async function (event) { // https://developer.mozilla.org/en-US/docs/Web/API/FileReader
+    const file = event.target.files[0]
+
+    if (!file) {
+        return
+    }
+
+    const reader = new FileReader()
+
+    reader.readAsText(file)
+
+    reader.onload = function () {
+        displayMd(reader.result)
+        imodal.hide()
+    }
+}
+
+reloadButton.addEventListener('click', () => reloadSchedule(true))
+importButton.addEventListener('click', importTempTask)
+importFileInput.addEventListener('change', handleTaskFile)
 
 const getSchedule = async function (force = false) {
     const res = await fetch('https://raw.githubusercontent.com/szekeres3/advent/refs/heads/main/src/tasks/schedule.json', {
@@ -47,12 +73,17 @@ const getSchedule = async function (force = false) {
     return data
 }
 
+const displayMd = function (htmlDt) {
+    taskElem.innerHTML = md.render(htmlDt)
+}
+
 const loadMd = async function (name) {
     const res = await fetch(`https://raw.githubusercontent.com/szekeres3/advent/refs/heads/main/src/tasks/${name}`)
     const data = await res.text()
 
-    taskElem.innerHTML = md.render(data)
+    displayMd(data)
 }
+
 
 const main = async function () {
     md = new markdownit()
