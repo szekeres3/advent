@@ -15,6 +15,8 @@ A feladatban 3 rész feladatot kell megoldanod.
 
 > Plusz feladat Mit veszünk észre, milyen számok jelennek meg?
 
+Elérés: [Feladat](https://scratch.mit.edu/projects/1440397053)
+
 ## Ötletek
 
 1. [A bináris számokról](https://tudasinfo.hu/binaris-szamrendszer/)
