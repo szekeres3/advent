@@ -19,6 +19,7 @@ let md = null
 let currPage = 0
 
 const changeMd = function (pickDate, isForce = false, page = 0) {
+    currPage = page
     const pdate = schedule[pickDate]
     if (!pdate) {
         if (isForce) {
@@ -50,15 +51,26 @@ const navigateToFirstDate = function () {
 
 const changeTaskPage = function(page) {
     const pickDate = dateElem.value
-    const safePage = Math.min(Math.max(0, page), schedule[pickDate].length - 1)
-    currPage = safePage
+    if(!(schedule[pickDate])) {
+        return
+    }
+    if(page < 0) {
+        return
+    }
+    if(page >= schedule[pickDate].length ){
+        return
+    }
+    if(currPage == page) {
+        return
+    }
 
-    changeMd(pickDate, false, safePage)
+    currPage = page
+    changeMd(pickDate, false, page)
 }
 
 firstDateButton.addEventListener('click', navigateToFirstDate)
-prevButton.addEventListener('click', () => changeTaskPage(--currPage))
-nextButton.addEventListener('click', () => changeTaskPage(++currPage))
+prevButton.addEventListener('click', () => changeTaskPage(currPage - 1))
+nextButton.addEventListener('click', () => changeTaskPage(currPage + 1))
 
 dateElem.addEventListener('change', function (event) {
     const pickDate = event.target.value
