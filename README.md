@@ -24,6 +24,7 @@ scratch                (mentett Scratch projektek)
 1. Bootstrap 5.3.8
 1. markdown-it 15.0.3
 1. [Blockflow](https://blockflow.openpatch.org/)
+1. [Blockly](https://blockly.games/)
 
 ## Célok
 
