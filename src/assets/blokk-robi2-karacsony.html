@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Robi karácsonyi küldetése – blokkprogramozás</title>
+<style>
+:root{--bg:#eef2fb;--card:#fff;--tx:#1f2a44;--mu:#5b6785;--ac:#c0392b;--bd:#d5dcf0;--path:#eaf2fb;--wall:#5fae70;--water:#b9defa;--ok:#d9f5e1;--okt:#14532d;--er:#fde2e2;--ert:#7f1d1d;--wn:#fff3cd;--wnt:#664d03;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12172a;--card:#1c2340;--tx:#e8ecfa;--mu:#a3adcc;--bd:#323c63;--path:#56688f;--wall:#2f6b3a;--water:#2a5f86;--ok:#14391f;--okt:#b7f0c8;--er:#4a1c1c;--ert:#fbcaca;--wn:#4a3f14;--wnt:#ffe69c;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#12172a;--card:#1c2340;--tx:#e8ecfa;--mu:#a3adcc;--bd:#323c63;--path:#56688f;--wall:#2f6b3a;--water:#2a5f86;--ok:#14391f;--okt:#b7f0c8;--er:#4a1c1c;--ert:#fbcaca;--wn:#4a3f14;--wnt:#ffe69c;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 system-ui,"Segoe UI",Roboto,sans-serif}
+main{max-width:1100px;margin:0 auto;padding:16px}
+h1{font-size:1.5rem;margin:0 0 10px}
+h2{font-size:1.15rem;margin:0 0 4px}
+p{margin:0;color:var(--mu)}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.tab,.btn{border:2px solid var(--bd);background:var(--card);color:var(--tx);border-radius:12px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer}
+.tab.on{background:var(--ac);border-color:var(--ac);color:#fff}
+.tab:disabled{opacity:.5;cursor:not-allowed}
+.btn.p{background:var(--ac);border-color:var(--ac);color:#fff}
+.btn:disabled{opacity:.6;cursor:wait}
+.grid{display:grid;grid-template-columns:minmax(260px,380px) 1fr;gap:16px;align-items:start}
+@media (max-width:820px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:14px}
+#board{position:relative;display:grid;width:100%;max-width:380px;margin:12px auto;border-radius:10px;overflow:hidden}
+.c{aspect-ratio:1;background:var(--path);display:flex;align-items:center;justify-content:center;font-size:clamp(16px,4.5vw,28px);box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.c.w{background:var(--wall)}.c.wa{background:var(--water)}
+#robot{position:absolute;padding:5%;pointer-events:none;transition:left .2s,top .2s}
+#robot svg{display:block;width:100%;height:100%;transition:transform .2s}
+#robot.bump{animation:sh .4s}
+@keyframes sh{25%{translate:-5px 0}75%{translate:5px 0}}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.msg{margin-top:12px;padding:10px 12px;border-radius:12px;font-weight:600;background:var(--bg);color:var(--tx)}
+.msg.ok{background:var(--ok);color:var(--okt)}.msg.er{background:var(--er);color:var(--ert)}.msg.wn{background:var(--wn);color:var(--wnt)}
+.cnt{font-weight:600;margin-bottom:8px;color:var(--mu)}
+#ws{height:min(70vh,520px);min-height:340px;border-radius:12px;overflow:hidden;border:1px solid var(--bd)}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/blockly@10.4.3/blockly_compressed.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/blockly@10.4.3/msg/hu.js"></script>
+</head>
+<body>
+<main>
+<h1>🎅 Robi karácsonyi küldetése</h1>
+<div class="tabs" id="tabs"></div>
+<div class="grid">
+ <section class="card">
+  <h2 id="ttl"></h2><p id="task"></p>
+  <div id="board"></div>
+  <div class="row"><button class="btn p" id="run">▶ Futtatás</button><button class="btn" id="rst">↺ Újra</button><button class="btn p" id="nxt" hidden>Következő küldetés ▶</button></div>
+  <div class="msg" id="msg"></div>
+ </section>
+ <section class="card"><div class="cnt" id="cnt"></div><div id="ws"></div></section>
+</div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+if(!window.Blockly){$('msg').textContent='A Blockly nem töltődött be – ellenőrizd az internetkapcsolatot.';throw new Error('no blockly')}
+
+// S = start, G = cél, g = ajándék az úton, # = fenyő, ~ = jég, . = út. Robi kelet felé indul.
+const LV=[
+{t:'1. küldetés – Ajándékgyűjtés',e:'🎄',m:10,
+ k:'Közeleg a karácsony! Szedd fel mind a 3 ajándékot az úton, aztán vidd el Robit a karácsonyfához! Legfeljebb 10 blokkot használhatsz.',
+ g:['S.g.g.g','##~#~#.','#~#~##G'],b:['forward','turn_right','pick','repeat']},
+{t:'2. küldetés – Hóvihar az úton',e:'🏠',m:6,
+ k:'Hóvihar van: Robi csak azt látja, szabad-e előtte az út. Juttasd el a Mikulás házához! Legfeljebb 6 blokk. Tipp: az ismétlés addig fut, amíg Robi célba nem ér.',
+ g:['S......','~~~~~~.','.....#.','.###.#.','.#G..#.','.~~~~~.','.......'],b:['forward','turn_right','until_goal','if_else']},
+{t:'3. küldetés – A nagy ajándékozás',e:'🎅',m:9,
+ k:'Az utolsó szakasz: kanyarok mindkét irányba és 4 ajándék az úton. Legfeljebb 9 blokk! Tipp: a „különben” ágba is tehetsz egy újabb „ha” blokkot.',
+ g:['S.g.##~~','###.##~~','###..g.#','~~####.#','#...g..#','#.####~~','#.g.G~~~'],b:['forward','turn_left','turn_right','pick','until_goal','if_else']}];
+
+Blockly.defineBlocksWithJsonArray([
+{type:'start',message0:'▶ Indítás',nextStatement:null,colour:45},
+{type:'forward',message0:'lépj előre',previousStatement:null,nextStatement:null,colour:210},
+{type:'turn_left',message0:'fordulj balra ↶',previousStatement:null,nextStatement:null,colour:285},
+{type:'turn_right',message0:'fordulj jobbra ↷',previousStatement:null,nextStatement:null,colour:20},
+{type:'pick',message0:'🎁 vedd fel az ajándékot',previousStatement:null,nextStatement:null,colour:330},
+{type:'repeat',message0:'ismételd %1 alkalommal',args0:[{type:'field_number',name:'N',value:2,min:1,max:9,precision:1}],
+ message1:'%1',args1:[{type:'input_statement',name:'DO'}],previousStatement:null,nextStatement:null,colour:120},
+{type:'until_goal',message0:'ismételd, amíg nem érsz a célhoz',message1:'%1',args1:[{type:'input_statement',name:'DO'}],
+ previousStatement:null,nextStatement:null,colour:175},
+{type:'if_else',message0:'ha %1 szabad az út',args0:[{type:'field_dropdown',name:'COND',options:[['előre','F'],['jobbra','R'],['balra','L']]}],
+ message1:'akkor %1',args1:[{type:'input_statement',name:'DO'}],message2:'különben %1',args2:[{type:'input_statement',name:'ELSE'}],
+ previousStatement:null,nextStatement:null,colour:65}]);
+
+const SVG='<svg viewBox="0 0 40 40"><rect x="5" y="7" width="26" height="26" rx="7" fill="#dc2626" stroke="#7f1d1d" stroke-width="2"/><circle cx="24" cy="15" r="3.2" fill="#fff"/><circle cx="24" cy="25" r="3.2" fill="#fff"/><path d="M32 14l7 6-7 6z" fill="#f59e0b"/><circle cx="9" cy="20" r="4" fill="#fff"/></svg>';
+const DX=[1,0,-1,0],DY=[0,1,0,-1],D=240,MAX=400;
+const TOO='Robi nagyon sokáig megy, valószínűleg körbe-körbe jár. Nézd át a programot!';
+let ws,cur=0,busy=false,done=[false,false,false],W,H,sx,sy,gx,gy,x,y,ang,robot,cells,gifts,got,tot,stop,ticks;
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const dir=()=>((ang/90)%4+4)%4;
+const say=(t,c)=>{const m=$('msg');m.textContent=t;m.className='msg '+(c||'')};
+const blocked=(a,b)=>a<0||b<0||a>=W||b>=H||'#~'.includes(LV[cur].g[b][a]);
+
+function build(){
+  const L=LV[cur],g=L.g,b=$('board');H=g.length;W=g[0].length;b.innerHTML='';cells=[];gifts=new Set();got=0;
+  b.style.gridTemplateColumns='repeat('+W+',1fr)';b.style.aspectRatio=W+'/'+H;
+  g.forEach((row,j)=>[...row].forEach((ch,i)=>{
+    const c=document.createElement('div');
+    c.className='c'+(ch==='#'?' w':ch==='~'?' w wa':'');
+    c.textContent=ch==='#'?'🌲':ch==='~'?'❄️':ch==='G'?L.e:ch==='g'?'🎁':'';
+    b.appendChild(c);cells.push(c);
+    if(ch==='S'){sx=i;sy=j}if(ch==='G'){gx=i;gy=j}if(ch==='g')gifts.add(j*W+i);
+  }));
+  tot=gifts.size;
+  robot=document.createElement('div');robot.id='robot';
+  robot.style.width=100/W+'%';robot.style.height=100/H+'%';robot.innerHTML=SVG;b.appendChild(robot);
+  x=sx;y=sy;ang=0;draw();
+}
+function draw(){robot.style.left=x*100/W+'%';robot.style.top=y*100/H+'%';robot.firstChild.style.transform='rotate('+ang+'deg)'}
+function bump(){robot.classList.remove('bump');void robot.offsetWidth;robot.classList.add('bump')}
+function hl(id){try{ws.highlightBlock(id)}catch(e){}}
+
+function mount(){
+  if(ws){ws.dispose();$('ws').innerHTML=''}
+  const L=LV[cur];
+  ws=Blockly.inject('ws',{renderer:'zelos',sounds:false,trashcan:false,collapse:false,comments:false,disable:false,
+    maxBlocks:L.m+1,move:{scrollbars:true,drag:true,wheel:false},
+    toolbox:{kind:'flyoutToolbox',contents:L.b.map(type=>({kind:'block',type}))}});
+  Blockly.serialization.workspaces.load({blocks:{languageVersion:0,blocks:[{type:'start',x:24,y:24,deletable:false}]}},ws);
+  ws.addChangeListener(count);count();
+}
+function count(){
+  const n=ws.getAllBlocks(false).length-1;
+  $('cnt').textContent='Blokkok: '+n+' / '+LV[cur].m+(tot?'  ·  🎁 '+got+' / '+tot:'');
+}
+
+async function act(ms){if(++ticks>MAX&&!stop)stop=TOO;draw();await sleep(ms||D)}
+async function seq(b){
+  for(;b&&!stop;b=b.getNextBlock()){
+    hl(b.id);const t=b.type;
+    if(t==='forward'){
+      const nx=x+DX[dir()],ny=y+DY[dir()];
+      if(blocked(nx,ny)){bump();stop='Jaj, Robi nekiment az akadálynak! Nézd át a blokkok sorrendjét.';return}
+      x=nx;y=ny;await act();
+    }else if(t==='turn_left'){ang-=90;await act()}
+    else if(t==='turn_right'){ang+=90;await act()}
+    else if(t==='pick'){
+      const k=y*W+x;
+      if(gifts.delete(k)){cells[k].textContent='';got++;count();await act()}else await act(50);
+    }else if(t==='repeat'){
+      for(let i=+b.getFieldValue('N');i>0&&!stop;i--)await seq(b.getInputTargetBlock('DO'));
+    }else if(t==='until_goal'){
+      while(!(x===gx&&y===gy)&&!stop){await seq(b.getInputTargetBlock('DO'));if(++ticks>MAX&&!stop)stop=TOO}
+    }else if(t==='if_else'){
+      await sleep(60);
+      const d=(dir()+{F:0,R:1,L:3}[b.getFieldValue('COND')])%4;
+      await seq(b.getInputTargetBlock(blocked(x+DX[d],y+DY[d])?'ELSE':'DO'));
+    }
+  }
+}
+
+async function run(){
+  if(busy)return;build();count();hl(null);
+  const tops=ws.getTopBlocks(false);
+  if(tops.length>1){say('Minden blokkot kapcsolj az ▶ Indítás blokk alá!','wn');return}
+  if(!tops[0].getNextBlock()){say('Még nincs program. Húzz blokkokat az ▶ Indítás blokk alá!','wn');return}
+  busy=true;stop='';ticks=0;$('run').disabled=true;say('Robi úton van…');
+  await seq(tops[0].getNextBlock());
+  hl(null);busy=false;$('run').disabled=false;
+  if(stop)say(stop,'er');
+  else if(x!==gx||y!==gy)say('Robi nem ért oda a célhoz. Nézd meg újra a programot!','er');
+  else if(got<tot)say('Robi odaért, de nem szedett fel minden ajándékot ('+got+'/'+tot+'). Maradt még ajándék az úton!','er');
+  else win();
+}
+function win(){
+  done[cur]=true;tabs();
+  if(cur<2){say('Szuper, megoldottad! 🎉 Mehetsz a következő küldetésre.','ok');$('nxt').hidden=false}
+  else say('Boldog karácsonyt! 🎄 Mind a három küldetést teljesítetted, a Mikulás hálás! 🏆','ok');
+}
+function tabs(){
+  const t=$('tabs');t.innerHTML='';
+  LV.forEach((_,i)=>{
+    const b=document.createElement('button'),open=i===0||done[i-1];
+    b.className='tab'+(i===cur?' on':'');b.disabled=!open;
+    b.textContent=(done[i]?'✅ ':open?'':'🔒 ')+(i+1)+'. küldetés';
+    b.onclick=()=>{if(!busy)go(i)};t.appendChild(b);
+  });
+}
+function go(i){
+  cur=i;busy=false;$('run').disabled=false;$('nxt').hidden=true;
+  $('ttl').textContent=LV[i].t;$('task').textContent=LV[i].k;
+  say('Építsd meg a programot, majd nyomd meg a ▶ Futtatás gombot!');
+  build();mount();tabs();
+}
+$('run').onclick=run;
+$('rst').onclick=()=>{if(!busy){build();count();hl(null);say('Robi visszatért a startra.')}};
+$('nxt').onclick=()=>{if(!busy&&cur<2)go(cur+1)};
+new ResizeObserver(()=>ws&&Blockly.svgResize(ws)).observe($('ws'));
+go(0);
+</script>
+</body>
+</html>
