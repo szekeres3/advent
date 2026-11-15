@@ -13,7 +13,7 @@ A cél, hogy minél kevesebb utasításból álló, átlátható algoritmusokkal
 
 ### Játék menete
 
-Nyisd meg a **[Blokk Robi játékot](../assets/blokk-robi.html)**, és teljesítsd egymás után mindhárom pályát:
+Nyisd meg a **[Blokk Robi játékot](assets/blokk-robi.html)**, és teljesítsd egymás után mindhárom pályát:
 
 1. **Első lépések:** Vezesd el Robit a csillaghoz az *Indítás* blokk alá kapcsolt alapvető mozgás- és fordulásblokkokkal.
 2. **A lépcső:** Juss fel a lépcsőn a célig úgy, hogy legfeljebb **7 blokkot** használsz fel.
